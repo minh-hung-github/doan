@@ -3,19 +3,25 @@ import AppConstants from './appConstants.js';
 import postApi from './api/postApi.js';
 import utils from './utils.js';
 
-const handleEditButton = (post) => {
+const handleEditButton = (e, post) => {
   //if (!post.id) return;
   window.location = `add-edit-post.html?postId=${post.id}`;
+  e.stopPropagation();
 }
 
-const handleRemovePost = (liElement) => {
-  const postListElement = document.querySelector('#postsList');
+const handleRemovePost = (liElement, post) => {
+  // const postListElement = document.querySelector('#postsList');
   const confirmMessage = 'You\'re going delete this post. really?';
   if (window.confirm(confirmMessage)) {
-    postListElement.removeChild(liElement);
+    //postListElement.removeChild(liElement);
+    //liElement.parentNode.removeChild(liElement);
+    liElement.remove();
     postApi.remove(post.id);
   }
+}
 
+const actionlinkPost = (e, post) => {
+  window.location = `post-detail.html?postId=${post.id}`;
 }
 
 const buildLiElement = (post) => {
@@ -23,6 +29,7 @@ const buildLiElement = (post) => {
   const templteFragment = templateElement.content.cloneNode(true);
   const liElement = templteFragment.querySelector('li');
   if (liElement) {
+    liElement.addEventListener('click', (e) => actionlinkPost(e, post));
     const imgElement = liElement.querySelector('#postItemImage');
     if (imgElement) {
       imgElement.src = post.imageUrl;
@@ -45,12 +52,12 @@ const buildLiElement = (post) => {
 
     const editPost = liElement.querySelector('#postItemEdit');
     if (editPost) {
-      editPost.addEventListener('click', () => handleEditButton(post));
+      editPost.addEventListener('click', (e) => handleEditButton(e, post));
     }
 
     const removePost = liElement.querySelector('#postItemRemove');
     if (removePost) {
-      removePost.addEventListener('click', () => handleRemovePost(liElement));
+      removePost.addEventListener('click', () => handleRemovePost(liElement, post));
     }
   }
   return liElement;
@@ -225,7 +232,7 @@ const setHrefAtMaxPage = (aPaginationList, liPaginationList, objValidate) => {
   }
 };
 
-const setHrefMidMaxPage = (aPaginationList, liPaginationList, objValidate) => {
+const setHrefMidMaxPageAndCurPage = (aPaginationList, liPaginationList, objValidate) => {
   const page = objValidate.curPage;
 
   aPaginationList[3].href = `index.html?_page=${page + 1}&_limit=6`;
@@ -248,6 +255,11 @@ const setHrefMidMaxPage = (aPaginationList, liPaginationList, objValidate) => {
   liPaginationList[4].classList.remove('disabled');
 }
 
+const unHidePagination = () => {
+  const paginationElement = document.querySelector('#postsPagination');
+  paginationElement.removeAttribute('hidden');
+}
+
 const renderPagination = async (maxPage) => {
   try {
     let newPostList = null;
@@ -266,6 +278,7 @@ const renderPagination = async (maxPage) => {
         removeAttrClass(liPaginationList);
         setHrefNotCurPage(aPaginationList, liPaginationList, objValidate);
         newPostList = (await postApi.getAll({ _page: 1, _limit: 6 })).data;
+        unHidePagination();
         activeCurPage(liPaginationList, maxPage);
       }
       else if (curPage === maxPage) {
@@ -274,18 +287,18 @@ const renderPagination = async (maxPage) => {
         const params = new URLSearchParams(window.location.search);
         const page = Number(params.get('_page'));
         newPostList = (await postApi.getAll({ _page: page, _limit: 6 })).data;
+        unHidePagination();
         activeCurPage(liPaginationList, maxPage);
       }
       else {
         removeAttrClass(liPaginationList);
-        setHrefMidMaxPage(aPaginationList, liPaginationList, objValidate);
+        setHrefMidMaxPageAndCurPage(aPaginationList, liPaginationList, objValidate);
         const params = new URLSearchParams(window.location.search);
         const page = Number(params.get('_page'));
         newPostList = (await postApi.getAll({ _page: page, _limit: 6 })).data;
+        unHidePagination();
         activeCurPage(liPaginationList, maxPage);
       }
-
-
     }
     return newPostList;
   } catch (error) {

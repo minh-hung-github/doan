@@ -8,8 +8,7 @@ export default class BaseApi {
   }
 
   getAll(obj) {
-    const str = `_page=${obj._page}&_limit=${obj._limit}`;
-    //const str = utils.urlString(obj);
+    const str = utils.urlString(obj);
     const url = `${AppConstants.API_URL}/${this.getResourceName()}/?${str}`;
     return fetchClient.get(url);
   }

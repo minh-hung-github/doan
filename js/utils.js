@@ -79,10 +79,18 @@ const removeClassByElementId = (elementId, classList) => {
 
 const getElementById = (id) => document.querySelector(`#${id}`);
 
-// const urlString = (obj) => {
-//   const str = `_page=${obj._page}&_limit=${obj._limit}`;
-//   return str;
-// }
+const urlString = (obj) => {
+  let str = '';
+  const arr = Object.keys(obj);
+  for (let i = 0; i < arr.length; ++i) {
+    if (i === 0) {
+      str += `${arr[i]}=${obj[arr[i]]}`;
+    } else {
+      str += `&${arr[i]}=${obj[arr[i]]}`;
+    }
+  }
+  return str;
+}
 
 const utils = {
   truncateTextlength,
@@ -95,6 +103,6 @@ const utils = {
   addClassByElementId,
   removeClassByElementId,
   getElementById,
-  // urlString,
+  urlString,
 };
 export default utils;
